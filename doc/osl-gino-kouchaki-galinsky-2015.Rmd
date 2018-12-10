@@ -32,12 +32,63 @@ This analysis will follow the data science workflow advocated by [Garrett Grolem
 
 ## Import
 ___
+We start by loading the necessary packages.
+
+```{r message=FALSE}
+library(tidyverse) # utility
+```
+
+Now we can import the data set. Note the relative path since the working directory has been set.
+
+```{r message=FALSE}
+gino <- read_csv("../data/Gino Kouchaki Galinsky 2015 Experiment 3.csv")
+```
 
 ## Clean
 ___
+Unlike some data sets in the Open Stats Lab series, Dr. McIntyre chose to leave all observations in this file. That is, the data set has 291 observations instead of 288. 
+
+```{r}
+glimpse(gino)
+```
+
+It appears that we must filter for those participants who passed the manipulation check, `FAILED_MC`, excluding those who failed it. Once we do that, this variable is useless and we can drop it, along with `instr`, `filter`, `MCheck`, the demographic variables and the dummy variables. Keep only one of the two condition variables.
+
+```{r}
+gino_clean <- gino %>%
+  filter(FAILED_MC == 0) %>%
+  select(-c(instr, filter, CONDITION, FAILED_MC, MCheck, age, male),
+         -ends_with("Dummy")) %>%
+  rename(condition = condition_string)
+```
+
+A transformation of condition into a factor is necessary for the one-way ANOVAs.
+
+```{r}
+gino_clean <- within(gino_clean, {
+  condition <- factor(condition)
+})
+```
 
 ## Understand
 ___
+Our first task is to compute aggregate dependent measures. A chain of pipes makes this task is relatively simple in R. For each dependent measure, we will mutate a new variable that selects individual columns to compute the mean for each row. The aggregate is more useful for future analyses, so the individual measures of impurity, dissonance, and so on will be dropped.
+
+Always save your results as a new R data frame to track changes.
+
+```{r}
+(gino_means <- gino_clean %>%
+  mutate(
+    feelings_of_impurity = select(gino_clean, starts_with("impurity")) %>% rowMeans(),
+    feelings_of_discomfort = select(gino_clean, starts_with("dissonance")) %>% rowMeans(),
+    negative_affect = select(gino_clean, starts_with("neg")) %>% rowMeans(),
+    positive_affect = select(gino_clean, starts_with("pos")) %>% rowMeans(),
+    embarrassment = select(gino_clean, embarrassed, ashamed) %>% rowMeans(),
+    self_alienation = select(gino_clean, starts_with("alien")) %>% rowMeans()
+  ) %>%
+  select(condition, feelings_of_impurity, feelings_of_discomfort, negative_affect,
+         positive_affect, embarrassment, self_alienation, decided_to_help))
+```
 
 ## Communicate
 ___

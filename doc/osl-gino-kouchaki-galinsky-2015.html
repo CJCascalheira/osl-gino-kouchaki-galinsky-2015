@@ -246,14 +246,90 @@ div.tocify {
 <div id="import" class="section level2">
 <h2>Import</h2>
 <hr />
+<p>We start by loading the necessary packages.</p>
+<pre class="r"><code>library(tidyverse) # utility</code></pre>
+<p>Now we can import the data set. Note the relative path since the working directory has been set.</p>
+<pre class="r"><code>gino &lt;- read_csv(&quot;../data/Gino Kouchaki Galinsky 2015 Experiment 3.csv&quot;)</code></pre>
 </div>
 <div id="clean" class="section level2">
 <h2>Clean</h2>
 <hr />
+<p>Unlike some data sets in the Open Stats Lab series, Dr. McIntyre chose to leave all observations in this file. That is, the data set has 291 observations instead of 288.</p>
+<pre class="r"><code>glimpse(gino)</code></pre>
+<pre><code>## Observations: 291
+## Variables: 30
+## $ instr               &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ...
+## $ filter              &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ...
+## $ CONDITION           &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...
+## $ FAILED_MC           &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...
+## $ condition_string    &lt;chr&gt; &quot;neutral&quot;, &quot;neutral&quot;, &quot;neutral&quot;, &quot;neutral&quot;...
+## $ impurity_1          &lt;dbl&gt; 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, ...
+## $ impurity_2          &lt;dbl&gt; 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, ...
+## $ impurity_3          &lt;dbl&gt; 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, ...
+## $ dissonance_1        &lt;dbl&gt; 1, 2, 2, 1, 1, 3, 2, 1, 1, 1, 2, 1, 5, 1, ...
+## $ dissonance_2        &lt;dbl&gt; 1, 2, 2, 1, 1, 2, 1, 1, 1, 1, 5, 1, 5, 1, ...
+## $ dissonance_3        &lt;dbl&gt; 6, 2, 2, 1, 1, 2, 1, 1, 1, 1, 6, 1, 5, 1, ...
+## $ neg_aff1            &lt;dbl&gt; 3, 4, 2, 1, 1, 1, 1, 1, 1, 5, 4, 1, 3, 1, ...
+## $ neg_aff2            &lt;dbl&gt; 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 4, 1, 2, 1, ...
+## $ neg_aff3            &lt;dbl&gt; 3, 3, 2, 1, 1, 2, 1, 1, 1, 5, 5, 1, 2, 1, ...
+## $ pos_aff1            &lt;dbl&gt; 2, 5, 5, 6, 4, 4, 5, 5, 6, 6, 5, 6, 2, 6, ...
+## $ pos_aff2            &lt;dbl&gt; 1, 6, 5, 6, 5, 4, 5, 5, 6, 6, 5, 6, 2, 7, ...
+## $ pos_aff3            &lt;dbl&gt; 1, 5, 2, 6, 6, 4, 2, 4, 5, 5, 2, 6, 2, 6, ...
+## $ embarrassed         &lt;dbl&gt; 1, 1, 5, 1, 4, 2, 1, 1, 1, 1, 6, 1, 5, 1, ...
+## $ ashamed             &lt;dbl&gt; 1, 1, 2, 1, 4, 2, 1, 1, 1, 1, 5, 1, 5, 1, ...
+## $ alientation_1       &lt;dbl&gt; 2, 3, 5, 1, 1, 2, 2, 2, 2, 1, 3, 4, 4, 1, ...
+## $ alientation_2       &lt;dbl&gt; 1, 3, 2, 1, 1, 2, 2, 2, 1, 1, 2, 1, 3, 1, ...
+## $ alientation_3       &lt;dbl&gt; 1, 2, 2, 1, 1, 2, 2, 1, 1, 1, 3, 1, 5, 1, ...
+## $ alientation_4       &lt;dbl&gt; 2, 2, 2, 1, 1, 2, 2, 1, 1, 1, 4, 1, 3, 1, ...
+## $ MCheck              &lt;dbl&gt; 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, ...
+## $ age                 &lt;dbl&gt; 30, 31, 29, 33, 20, 18, 31, 39, 33, 28, 28...
+## $ male                &lt;dbl&gt; 2, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 2, ...
+## $ decided_to_help     &lt;dbl&gt; 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, ...
+## $ neutralDummy        &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ...
+## $ failureDummy        &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...
+## $ inauthenticityDummy &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...</code></pre>
+<p>It appears that we must filter for those participants who passed the manipulation check, <code>FAILED_MC</code>, excluding those who failed it. Once we do that, this variable is useless and we can drop it, along with <code>instr</code>, <code>filter</code>, <code>MCheck</code>, the demographic variables and the dummy variables. Keep only one of the two condition variables.</p>
+<pre class="r"><code>gino_clean &lt;- gino %&gt;%
+  filter(FAILED_MC == 0) %&gt;%
+  select(-c(instr, filter, CONDITION, FAILED_MC, MCheck, age, male),
+         -ends_with(&quot;Dummy&quot;)) %&gt;%
+  rename(condition = condition_string)</code></pre>
+<p>A transformation of condition into a factor is necessary for the one-way ANOVAs.</p>
+<pre class="r"><code>gino_clean &lt;- within(gino_clean, {
+  condition &lt;- factor(condition)
+})</code></pre>
 </div>
 <div id="understand" class="section level2">
 <h2>Understand</h2>
 <hr />
+<p>Our first task is to compute aggregate dependent measures. A chain of pipes makes this task is relatively simple in R. For each dependent measure, we will mutate a new variable that selects individual columns to compute the mean for each row. The aggregate is more useful for future analyses, so the individual measures of impurity, dissonance, and so on will be dropped.</p>
+<p>Always save your results as a new R data frame to track changes.</p>
+<pre class="r"><code>(gino_means &lt;- gino_clean %&gt;%
+  mutate(
+    feelings_of_impurity = select(gino_clean, starts_with(&quot;impurity&quot;)) %&gt;% rowMeans(),
+    feelings_of_discomfort = select(gino_clean, starts_with(&quot;dissonance&quot;)) %&gt;% rowMeans(),
+    negative_affect = select(gino_clean, starts_with(&quot;neg&quot;)) %&gt;% rowMeans(),
+    positive_affect = select(gino_clean, starts_with(&quot;pos&quot;)) %&gt;% rowMeans(),
+    embarrassment = select(gino_clean, embarrassed, ashamed) %&gt;% rowMeans(),
+    self_alienation = select(gino_clean, starts_with(&quot;alien&quot;)) %&gt;% rowMeans()
+  ) %&gt;%
+  select(condition, feelings_of_impurity, feelings_of_discomfort, negative_affect,
+         positive_affect, embarrassment, self_alienation, decided_to_help))</code></pre>
+<pre><code>## # A tibble: 288 x 8
+##    condition feelings_of_imp~ feelings_of_dis~ negative_affect
+##    &lt;fct&gt;                &lt;dbl&gt;            &lt;dbl&gt;           &lt;dbl&gt;
+##  1 neutral                  1             2.67            2.67
+##  2 neutral                  1             2               3   
+##  3 neutral                  1             2               2   
+##  4 neutral                  1             1               1   
+##  5 neutral                  1             1               1   
+##  6 neutral                  2             2.33            1.33
+##  7 neutral                  1             1.33            1   
+##  8 neutral                  1             1               1   
+##  9 neutral                  1             1               1   
+## 10 neutral                  1             1               3.67
+## # ... with 278 more rows, and 4 more variables: positive_affect &lt;dbl&gt;,
+## #   embarrassment &lt;dbl&gt;, self_alienation &lt;dbl&gt;, decided_to_help &lt;dbl&gt;</code></pre>
 </div>
 <div id="communicate" class="section level2">
 <h2>Communicate</h2>
@@ -286,36 +362,71 @@ div.tocify {
 ##  assertthat    0.2.0   2017-04-11 [1] CRAN (R 3.5.0)
 ##  backports     1.1.2   2017-12-13 [1] CRAN (R 3.5.0)
 ##  base64enc     0.1-3   2015-07-28 [1] CRAN (R 3.5.0)
+##  bindr         0.1.1   2018-03-13 [1] CRAN (R 3.5.0)
+##  bindrcpp    * 0.2.2   2018-03-29 [1] CRAN (R 3.5.0)
+##  broom         0.5.0   2018-07-17 [1] CRAN (R 3.5.1)
 ##  callr         3.0.0   2018-08-24 [1] CRAN (R 3.5.1)
+##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 3.5.0)
 ##  cli           1.0.1   2018-09-25 [1] CRAN (R 3.5.1)
+##  colorspace    1.3-2   2016-12-14 [1] CRAN (R 3.5.0)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 3.5.0)
 ##  desc          1.2.0   2018-05-01 [1] CRAN (R 3.5.1)
 ##  devtools      2.0.1   2018-10-26 [1] CRAN (R 3.5.1)
 ##  digest        0.6.18  2018-10-10 [1] CRAN (R 3.5.1)
+##  dplyr       * 0.7.8   2018-11-10 [1] CRAN (R 3.5.1)
 ##  evaluate      0.12    2018-10-09 [1] CRAN (R 3.5.1)
+##  fansi         0.4.0   2018-10-05 [1] CRAN (R 3.5.1)
+##  forcats     * 0.3.0   2018-02-19 [1] CRAN (R 3.5.0)
 ##  fs            1.2.6   2018-08-23 [1] CRAN (R 3.5.1)
+##  ggplot2     * 3.1.0   2018-10-25 [1] CRAN (R 3.5.1)
 ##  glue          1.3.0   2018-07-17 [1] CRAN (R 3.5.1)
+##  gtable        0.2.0   2016-02-26 [1] CRAN (R 3.5.0)
+##  haven         2.0.0   2018-11-22 [1] CRAN (R 3.5.1)
+##  hms           0.4.2   2018-03-10 [1] CRAN (R 3.5.0)
 ##  htmltools     0.3.6   2017-04-28 [1] CRAN (R 3.5.0)
+##  httr          1.3.1   2017-08-20 [1] CRAN (R 3.5.1)
+##  jsonlite      1.5     2017-06-01 [1] CRAN (R 3.5.1)
 ##  knitr         1.20    2018-02-20 [1] CRAN (R 3.5.0)
+##  lattice       0.20-38 2018-11-04 [1] CRAN (R 3.5.1)
+##  lazyeval      0.2.1   2017-10-29 [1] CRAN (R 3.5.0)
+##  lubridate     1.7.4   2018-04-11 [1] CRAN (R 3.5.1)
 ##  magrittr      1.5     2014-11-22 [1] CRAN (R 3.5.1)
 ##  memoise       1.1.0   2017-04-21 [1] CRAN (R 3.5.1)
+##  modelr        0.1.2   2018-05-11 [1] CRAN (R 3.5.1)
+##  munsell       0.5.0   2018-06-12 [1] CRAN (R 3.5.0)
+##  nlme          3.1-137 2018-04-07 [1] CRAN (R 3.5.1)
+##  pillar        1.3.0   2018-07-14 [1] CRAN (R 3.5.1)
 ##  pkgbuild      1.0.2   2018-10-16 [1] CRAN (R 3.5.1)
+##  pkgconfig     2.0.2   2018-08-16 [1] CRAN (R 3.5.1)
 ##  pkgload       1.0.2   2018-10-29 [1] CRAN (R 3.5.1)
+##  plyr          1.8.4   2016-06-08 [1] CRAN (R 3.5.0)
 ##  prettyunits   1.0.2   2015-07-13 [1] CRAN (R 3.5.1)
 ##  processx      3.2.0   2018-08-16 [1] CRAN (R 3.5.1)
 ##  ps            1.2.1   2018-11-06 [1] CRAN (R 3.5.1)
+##  purrr       * 0.2.5   2018-05-29 [1] CRAN (R 3.5.1)
 ##  R6            2.3.0   2018-10-04 [1] CRAN (R 3.5.1)
 ##  Rcpp          1.0.0   2018-11-07 [1] CRAN (R 3.5.1)
+##  readr       * 1.2.1   2018-11-22 [1] CRAN (R 3.5.1)
+##  readxl        1.1.0   2018-04-20 [1] CRAN (R 3.5.0)
 ##  remotes       2.0.2   2018-10-30 [1] CRAN (R 3.5.1)
 ##  rlang         0.3.0.1 2018-10-25 [1] CRAN (R 3.5.1)
 ##  rmarkdown     1.10    2018-06-11 [1] CRAN (R 3.5.0)
 ##  rprojroot     1.3-2   2018-01-03 [1] CRAN (R 3.5.0)
+##  rstudioapi    0.8     2018-10-02 [1] CRAN (R 3.5.1)
+##  rvest         0.3.2   2016-06-17 [1] CRAN (R 3.5.0)
+##  scales        1.0.0   2018-08-09 [1] CRAN (R 3.5.1)
 ##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 3.5.1)
 ##  stringi       1.2.4   2018-07-20 [1] CRAN (R 3.5.1)
-##  stringr       1.3.1   2018-05-10 [1] CRAN (R 3.5.1)
+##  stringr     * 1.3.1   2018-05-10 [1] CRAN (R 3.5.1)
 ##  testthat      2.0.1   2018-10-13 [1] CRAN (R 3.5.1)
+##  tibble      * 1.4.2   2018-01-22 [1] CRAN (R 3.5.0)
+##  tidyr       * 0.8.2   2018-10-28 [1] CRAN (R 3.5.1)
+##  tidyselect    0.2.5   2018-10-11 [1] CRAN (R 3.5.1)
+##  tidyverse   * 1.2.1   2017-11-14 [1] CRAN (R 3.5.0)
 ##  usethis       1.4.0   2018-08-14 [1] CRAN (R 3.5.1)
+##  utf8          1.1.4   2018-05-24 [1] CRAN (R 3.5.0)
 ##  withr         2.1.2   2018-03-15 [1] CRAN (R 3.5.0)
+##  xml2          1.2.0   2018-01-24 [1] CRAN (R 3.5.0)
 ##  yaml          2.2.0   2018-07-25 [1] CRAN (R 3.5.1)
 ## 
 ## [1] C:/R/R-3.5.1/library</code></pre>
