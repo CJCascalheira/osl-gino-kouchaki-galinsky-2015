@@ -247,7 +247,8 @@ div.tocify {
 <h2>Import</h2>
 <hr />
 <p>We start by loading the necessary packages.</p>
-<pre class="r"><code>library(tidyverse) # utility</code></pre>
+<pre class="r"><code>library(tidyverse) # utility
+library(psych) # cronbach's alpha</code></pre>
 <p>Now we can import the data set. Note the relative path since the working directory has been set.</p>
 <pre class="r"><code>gino &lt;- read_csv(&quot;../data/Gino Kouchaki Galinsky 2015 Experiment 3.csv&quot;)</code></pre>
 </div>
@@ -303,7 +304,7 @@ div.tocify {
 <h2>Understand</h2>
 <hr />
 <p>Our first task is to compute aggregate dependent measures. A chain of pipes makes this task is relatively simple in R. For each dependent measure, we will mutate a new variable that selects individual columns to compute the mean for each row. The aggregate is more useful for future analyses, so the individual measures of impurity, dissonance, and so on will be dropped.</p>
-<p>Always save your results as a new R data frame to track changes.</p>
+<p>Always save your results as new R data frames to track changes.</p>
 <pre class="r"><code>(gino_means &lt;- gino_clean %&gt;%
   mutate(
     feelings_of_impurity = select(gino_clean, starts_with(&quot;impurity&quot;)) %&gt;% rowMeans(),
@@ -330,6 +331,210 @@ div.tocify {
 ## 10 neutral                  1             1               3.67
 ## # ... with 278 more rows, and 4 more variables: positive_affect &lt;dbl&gt;,
 ## #   embarrassment &lt;dbl&gt;, self_alienation &lt;dbl&gt;, decided_to_help &lt;dbl&gt;</code></pre>
+<div id="cronbachs-alpha" class="section level3">
+<h3>Cronbach’s Alpha</h3>
+<p>Cronbach’s alpha is a measure of internal consistency ranging from 0 to 1. <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4205511/">Acceptable values</a> for the coefficient range from 0.70 to 0.95, although it has been noted that values greater than 0.90 may indicate redundancy. Longer measurement instruments increase internal consistency, but may cause redundancy.</p>
+<p>A function exists to calculate Cronbach’s alpha in <code>psych::alpha</code>. The function takes a data frame of scale items as its primary argument. Select the individual scale items prior to aggregation to compute alpha for each underlying construct.</p>
+<pre class="r"><code># Cronbach's alpha for feelings of impurity
+gino_clean %&gt;%
+  select(starts_with(&quot;impurity&quot;)) %&gt;%
+  psych::alpha()</code></pre>
+<pre><code>## 
+## Reliability analysis   
+## Call: psych::alpha(x = .)
+## 
+##   raw_alpha std.alpha G6(smc) average_r S/N    ase mean  sd median_r
+##       0.94      0.94    0.91      0.84  15 0.0062  2.3 1.7     0.84
+## 
+##  lower alpha upper     95% confidence boundaries
+## 0.93 0.94 0.95 
+## 
+##  Reliability if an item is dropped:
+##            raw_alpha std.alpha G6(smc) average_r  S/N alpha se var.r med.r
+## impurity_1      0.92      0.92    0.84      0.84 10.9    0.010    NA  0.84
+## impurity_2      0.91      0.91    0.83      0.83  9.7    0.011    NA  0.83
+## impurity_3      0.91      0.91    0.84      0.84 10.4    0.010    NA  0.84
+## 
+##  Item statistics 
+##              n raw.r std.r r.cor r.drop mean  sd
+## impurity_1 288  0.94  0.94  0.90   0.87  2.3 1.8
+## impurity_2 288  0.95  0.95  0.91   0.88  2.2 1.8
+## impurity_3 288  0.95  0.94  0.90   0.87  2.4 1.9
+## 
+## Non missing response frequency for each item
+##               1    2    3    4    5    6    7 miss
+## impurity_1 0.59 0.09 0.06 0.07 0.11 0.05 0.02    0
+## impurity_2 0.60 0.11 0.06 0.08 0.06 0.07 0.03    0
+## impurity_3 0.56 0.10 0.07 0.08 0.09 0.06 0.03    0</code></pre>
+<pre class="r"><code># Cronbach's alpha for feelings of discomfort
+gino_clean %&gt;%
+  select(starts_with(&quot;dissonance&quot;)) %&gt;%
+  psych::alpha()</code></pre>
+<pre><code>## 
+## Reliability analysis   
+## Call: psych::alpha(x = .)
+## 
+##   raw_alpha std.alpha G6(smc) average_r S/N   ase mean sd median_r
+##       0.94      0.94    0.93      0.85  17 0.006  4.1  2     0.82
+## 
+##  lower alpha upper     95% confidence boundaries
+## 0.93 0.94 0.95 
+## 
+##  Reliability if an item is dropped:
+##              raw_alpha std.alpha G6(smc) average_r  S/N alpha se var.r
+## dissonance_1      0.90      0.90    0.82      0.82  9.3   0.0115    NA
+## dissonance_2      0.88      0.88    0.79      0.79  7.6   0.0136    NA
+## dissonance_3      0.96      0.96    0.92      0.92 24.7   0.0046    NA
+##              med.r
+## dissonance_1  0.82
+## dissonance_2  0.79
+## dissonance_3  0.92
+## 
+##  Item statistics 
+##                n raw.r std.r r.cor r.drop mean  sd
+## dissonance_1 288  0.96  0.96  0.94   0.90  4.0 2.2
+## dissonance_2 288  0.97  0.97  0.96   0.92  4.0 2.1
+## dissonance_3 288  0.92  0.92  0.84   0.82  4.3 2.1
+## 
+## Non missing response frequency for each item
+##                 1    2    3    4    5    6    7 miss
+## dissonance_1 0.25 0.11 0.05 0.05 0.23 0.20 0.11    0
+## dissonance_2 0.24 0.09 0.05 0.06 0.25 0.21 0.10    0
+## dissonance_3 0.21 0.06 0.06 0.05 0.25 0.23 0.14    0</code></pre>
+<pre class="r"><code># Cronbach's alpha for negative affect
+gino_clean %&gt;%
+  select(starts_with(&quot;neg&quot;)) %&gt;%
+  psych::alpha()</code></pre>
+<pre><code>## 
+## Reliability analysis   
+## Call: psych::alpha(x = .)
+## 
+##   raw_alpha std.alpha G6(smc) average_r S/N    ase mean sd median_r
+##       0.93      0.93     0.9      0.81  13 0.0075  3.7  2     0.78
+## 
+##  lower alpha upper     95% confidence boundaries
+## 0.91 0.93 0.94 
+## 
+##  Reliability if an item is dropped:
+##          raw_alpha std.alpha G6(smc) average_r  S/N alpha se var.r med.r
+## neg_aff1      0.88      0.88    0.78      0.78  7.3   0.0143    NA  0.78
+## neg_aff2      0.93      0.93    0.87      0.87 12.9   0.0085    NA  0.87
+## neg_aff3      0.87      0.87    0.77      0.77  6.9   0.0150    NA  0.77
+## 
+##  Item statistics 
+##            n raw.r std.r r.cor r.drop mean  sd
+## neg_aff1 288  0.94  0.94  0.91   0.87  3.9 2.2
+## neg_aff2 288  0.91  0.91  0.83   0.81  3.3 2.1
+## neg_aff3 288  0.95  0.95  0.92   0.88  3.9 2.2
+## 
+## Non missing response frequency for each item
+##             1    2    3    4    5    6    7 miss
+## neg_aff1 0.28 0.08 0.06 0.09 0.20 0.16 0.13    0
+## neg_aff2 0.34 0.13 0.07 0.12 0.14 0.10 0.10    0
+## neg_aff3 0.27 0.08 0.09 0.05 0.22 0.16 0.13    0</code></pre>
+<pre class="r"><code># Cronbach's alpha for positive affect
+gino_clean %&gt;%
+  select(starts_with(&quot;pos&quot;)) %&gt;%
+  psych::alpha()</code></pre>
+<pre><code>## 
+## Reliability analysis   
+## Call: psych::alpha(x = .)
+## 
+##   raw_alpha std.alpha G6(smc) average_r S/N    ase mean  sd median_r
+##       0.95      0.95    0.94      0.86  18 0.0055  2.8 1.8     0.81
+## 
+##  lower alpha upper     95% confidence boundaries
+## 0.94 0.95 0.96 
+## 
+##  Reliability if an item is dropped:
+##          raw_alpha std.alpha G6(smc) average_r  S/N alpha se var.r med.r
+## pos_aff1      0.89      0.89    0.81      0.81  8.5   0.0125    NA  0.81
+## pos_aff2      0.89      0.89    0.81      0.81  8.5   0.0125    NA  0.81
+## pos_aff3      0.98      0.98    0.96      0.96 49.9   0.0023    NA  0.96
+## 
+##  Item statistics 
+##            n raw.r std.r r.cor r.drop mean  sd
+## pos_aff1 288  0.97  0.97  0.97   0.93  2.8 1.9
+## pos_aff2 288  0.97  0.97  0.97   0.93  2.9 2.0
+## pos_aff3 288  0.91  0.92  0.82   0.82  2.7 1.8
+## 
+## Non missing response frequency for each item
+##             1    2    3    4    5    6    7 miss
+## pos_aff1 0.35 0.25 0.08 0.09 0.09 0.10 0.04    0
+## pos_aff2 0.33 0.26 0.08 0.06 0.11 0.10 0.06    0
+## pos_aff3 0.34 0.26 0.11 0.10 0.08 0.06 0.05    0</code></pre>
+<pre class="r"><code># Cronbach's alpha for embarrassment
+gino_clean %&gt;%
+  select(embarrassed, ashamed) %&gt;%
+  psych::alpha()</code></pre>
+<pre><code>## 
+## Reliability analysis   
+## Call: psych::alpha(x = .)
+## 
+##   raw_alpha std.alpha G6(smc) average_r S/N   ase mean  sd median_r
+##        0.9       0.9    0.81      0.81 8.6 0.012  3.7 2.1     0.81
+## 
+##  lower alpha upper     95% confidence boundaries
+## 0.87 0.9 0.92 
+## 
+##  Reliability if an item is dropped:
+##             raw_alpha std.alpha G6(smc) average_r S/N alpha se var.r med.r
+## embarrassed      0.81      0.81    0.66      0.81  NA       NA  0.81  0.81
+## ashamed          0.66      0.81      NA        NA  NA       NA  0.66  0.81
+## 
+##  Item statistics 
+##               n raw.r std.r r.cor r.drop mean  sd
+## embarrassed 288  0.95  0.95  0.86   0.81  3.6 2.2
+## ashamed     288  0.95  0.95  0.86   0.81  3.7 2.2
+## 
+## Non missing response frequency for each item
+##                1    2    3    4    5    6    7 miss
+## embarrassed 0.28 0.13 0.06 0.07 0.22 0.16 0.09    0
+## ashamed     0.28 0.11 0.05 0.11 0.18 0.17 0.09    0</code></pre>
+<pre class="r"><code># Cronbach's alpha for self-alienation
+gino_clean %&gt;%
+  select(starts_with(&quot;alien&quot;)) %&gt;%
+  psych::alpha()</code></pre>
+<pre><code>## 
+## Reliability analysis   
+## Call: psych::alpha(x = .)
+## 
+##   raw_alpha std.alpha G6(smc) average_r S/N    ase mean  sd median_r
+##        0.9       0.9    0.89      0.69   9 0.0095    3 1.7     0.72
+## 
+##  lower alpha upper     95% confidence boundaries
+## 0.88 0.9 0.92 
+## 
+##  Reliability if an item is dropped:
+##               raw_alpha std.alpha G6(smc) average_r  S/N alpha se  var.r
+## alientation_1      0.92      0.92    0.89      0.80 12.2   0.0077 0.0014
+## alientation_2      0.85      0.84    0.82      0.64  5.4   0.0154 0.0307
+## alientation_3      0.85      0.85    0.82      0.66  5.9   0.0153 0.0168
+## alientation_4      0.85      0.86    0.82      0.67  6.0   0.0149 0.0122
+##               med.r
+## alientation_1  0.79
+## alientation_2  0.56
+## alientation_3  0.67
+## alientation_4  0.67
+## 
+##  Item statistics 
+##                 n raw.r std.r r.cor r.drop mean  sd
+## alientation_1 288  0.77  0.78  0.66   0.62  2.7 1.7
+## alientation_2 288  0.92  0.92  0.89   0.85  2.8 1.7
+## alientation_3 288  0.92  0.90  0.88   0.83  3.3 2.1
+## alientation_4 288  0.91  0.90  0.88   0.83  3.2 2.0
+## 
+## Non missing response frequency for each item
+##                  1    2    3    4    5    6    7 miss
+## alientation_1 0.31 0.31 0.10 0.08 0.13 0.06 0.02    0
+## alientation_2 0.33 0.25 0.09 0.09 0.17 0.05 0.02    0
+## alientation_3 0.31 0.18 0.06 0.06 0.22 0.11 0.06    0
+## alientation_4 0.32 0.18 0.06 0.12 0.17 0.10 0.05    0</code></pre>
+<p>After writing their essays, participants answered a questionnaire composed of items on a 7-point scale. The items assessed feelings of impurity, discomfort, negative and positive affect, embarrassment, and self-alienation.</p>
+</div>
+<div id="descriptive-statistics" class="section level3">
+<h3>Descriptive Statistics</h3>
+</div>
 </div>
 <div id="communicate" class="section level2">
 <h2>Communicate</h2>
@@ -377,6 +582,7 @@ div.tocify {
 ##  evaluate      0.12    2018-10-09 [1] CRAN (R 3.5.1)
 ##  fansi         0.4.0   2018-10-05 [1] CRAN (R 3.5.1)
 ##  forcats     * 0.3.0   2018-02-19 [1] CRAN (R 3.5.0)
+##  foreign       0.8-71  2018-07-20 [1] CRAN (R 3.5.1)
 ##  fs            1.2.6   2018-08-23 [1] CRAN (R 3.5.1)
 ##  ggplot2     * 3.1.0   2018-10-25 [1] CRAN (R 3.5.1)
 ##  glue          1.3.0   2018-07-17 [1] CRAN (R 3.5.1)
@@ -392,6 +598,7 @@ div.tocify {
 ##  lubridate     1.7.4   2018-04-11 [1] CRAN (R 3.5.1)
 ##  magrittr      1.5     2014-11-22 [1] CRAN (R 3.5.1)
 ##  memoise       1.1.0   2017-04-21 [1] CRAN (R 3.5.1)
+##  mnormt        1.5-5   2016-10-15 [1] CRAN (R 3.5.0)
 ##  modelr        0.1.2   2018-05-11 [1] CRAN (R 3.5.1)
 ##  munsell       0.5.0   2018-06-12 [1] CRAN (R 3.5.0)
 ##  nlme          3.1-137 2018-04-07 [1] CRAN (R 3.5.1)
@@ -403,6 +610,7 @@ div.tocify {
 ##  prettyunits   1.0.2   2015-07-13 [1] CRAN (R 3.5.1)
 ##  processx      3.2.0   2018-08-16 [1] CRAN (R 3.5.1)
 ##  ps            1.2.1   2018-11-06 [1] CRAN (R 3.5.1)
+##  psych       * 1.8.10  2018-10-31 [1] CRAN (R 3.5.1)
 ##  purrr       * 0.2.5   2018-05-29 [1] CRAN (R 3.5.1)
 ##  R6            2.3.0   2018-10-04 [1] CRAN (R 3.5.1)
 ##  Rcpp          1.0.0   2018-11-07 [1] CRAN (R 3.5.1)

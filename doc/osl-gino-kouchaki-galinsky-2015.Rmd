@@ -36,6 +36,7 @@ We start by loading the necessary packages.
 
 ```{r message=FALSE}
 library(tidyverse) # utility
+library(psych) # cronbach's alpha
 ```
 
 Now we can import the data set. Note the relative path since the working directory has been set.
@@ -74,7 +75,7 @@ gino_clean <- within(gino_clean, {
 ___
 Our first task is to compute aggregate dependent measures. A chain of pipes makes this task is relatively simple in R. For each dependent measure, we will mutate a new variable that selects individual columns to compute the mean for each row. The aggregate is more useful for future analyses, so the individual measures of impurity, dissonance, and so on will be dropped.
 
-Always save your results as a new R data frame to track changes.
+Always save your results as new R data frames to track changes.
 
 ```{r}
 (gino_means <- gino_clean %>%
@@ -90,8 +91,70 @@ Always save your results as a new R data frame to track changes.
          positive_affect, embarrassment, self_alienation, decided_to_help))
 ```
 
+### Cronbach's Alpha
+
+Cronbach's alpha is a measure of internal consistency ranging from 0 to 1. [Acceptable values](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4205511/) for the coefficient range from 0.70 to 0.95, although it has been noted that values greater than 0.90 may indicate redundancy. Longer measurement instruments increase internal consistency, but may cause redundancy.
+
+A function exists to calculate Cronbach's alpha in `psych::alpha`. The function takes a data frame of scale items as its primary argument. Select the individual scale items prior to aggregation to compute alpha for each underlying construct.
+
+```{r warning=FALSE}
+# Cronbach's alpha for feelings of impurity
+gino_clean %>%
+  select(starts_with("impurity")) %>%
+  psych::alpha()
+
+# Cronbach's alpha for feelings of discomfort
+gino_clean %>%
+  select(starts_with("dissonance")) %>%
+  psych::alpha()
+
+# Cronbach's alpha for negative affect
+gino_clean %>%
+  select(starts_with("neg")) %>%
+  psych::alpha()
+
+# Cronbach's alpha for positive affect
+gino_clean %>%
+  select(starts_with("pos")) %>%
+  psych::alpha()
+
+# Cronbach's alpha for embarrassment
+gino_clean %>%
+  select(embarrassed, ashamed) %>%
+  psych::alpha()
+
+# Cronbach's alpha for self-alienation
+gino_clean %>%
+  select(starts_with("alien")) %>%
+  psych::alpha()
+```
+
+After writing their essays, participants answered a questionnaire composed of items on a 7-point scale. The items assessed feelings of impurity ($\alpha = .94$), discomfort ($\alpha = .94$), negative ($\alpha = .93$) and positive ($\alpha = .95$) affect, embarrassment ($\alpha = .90$), and self-alienation ($\alpha = .90$).
+
+### Descriptive Statistics
+
+One method for calculating descriptive statistics uses a pipeline chaining `group_by()` and `summarize()`. First, we need to transform the data into long format using `gather()`. 
+
+Although the activity does not require it, you will notice the upper and lower bounds of the 95% confidence interval in the output. Note that the confidence intervals differ slightly from those reported by Gino, Kouchaki, and Galinsky (2015), which is to be expected. Had we chosen to perform bootstrapping with a call to `quantile()`, the computed 95% confidence intervals would have likely been different from those yielded below. Slight variation of confidence intervals is acceptable.
+
+```{r}
+(gino_summary <- gino_means %>%
+  select(-decided_to_help) %>%
+  gather(key = item, value = score, -condition) %>%
+  group_by(condition, item) %>%
+  summarize(
+    mean = mean(score),
+    sd = sd(score),
+    n = n(),
+    t_star = qt(p = 0.975, df = n - 1),
+    upper = mean + (t_star * (sd/sqrt(n))), 
+    lower = mean - (t_star * (sd/sqrt(n)))
+  ))
+```
+
 ## Communicate
 ___
+After writing their essays, participants answered a questionnaire composed of items on a 7-point scale. The items assessed feelings of impurity ($\alpha = .94$), discomfort ($\alpha = .94$), negative ($\alpha = .93$) and positive ($\alpha = .95$) affect, embarrassment ($\alpha = .90$), and self-alienation ($\alpha = .90$).
 
 # Acknowledgements
 ___

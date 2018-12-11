@@ -2,6 +2,7 @@
 
 # Load dependencies
 library(tidyverse)
+library(psych)
 
 # Set working directory
 setwd("~/GitHub/osl-gino-kouchaki-galinsky-2015/src")
@@ -38,4 +39,91 @@ gino_clean <- within(gino_clean, {
   select(condition, feelings_of_impurity, feelings_of_discomfort, negative_affect,
          positive_affect, embarrassment, self_alienation, decided_to_help))
 
-# Cronbach's alpha
+### Cronbach's Alpha ###
+
+# Cronbach's alpha for feelings of impurity
+gino_clean %>%
+  select(starts_with("impurity")) %>%
+  psych::alpha()
+
+# Cronbach's alpha for feelings of discomfort
+gino_clean %>%
+  select(starts_with("dissonance")) %>%
+  psych::alpha()
+
+# Cronbach's alpha for negative affect
+gino_clean %>%
+  select(starts_with("neg")) %>%
+  psych::alpha()
+
+# Cronbach's alpha for positive affect
+gino_clean %>%
+  select(starts_with("pos")) %>%
+  psych::alpha()
+
+# Cronbach's alpha for embarrassment
+gino_clean %>%
+  select(embarrassed, ashamed) %>%
+  psych::alpha()
+
+# Cronbach's alpha for self-alienation
+gino_clean %>%
+  select(starts_with("alien")) %>%
+  psych::alpha()
+
+### Descriptive Statistics ###
+
+# Calculate descriptives
+(gino_summary <- gino_means %>%
+  select(-decided_to_help) %>%
+  gather(key = item, value = score, -condition) %>%
+  group_by(condition, item) %>%
+  summarize(
+    mean = mean(score),
+    sd = sd(score),
+    n = n(),
+    t_star = qt(p = 0.975, df = n - 1),
+    upper = mean + (t_star * (sd/sqrt(n))), 
+    lower = mean - (t_star * (sd/sqrt(n)))
+  ))
+
+# Factorize item and add labels
+(gino_summary <- within(gino_summary, {
+  item <- factor(item, 
+                 levels = c("self_alienation", "feelings_of_impurity", "feelings_of_discomfort",
+                            "negative_affect", "positive_affect", "embarrassment"),
+                 labels = c("Self-alienation", "Feelings of impurity", "Discomfort",
+                            "Negative affect", "Positive affect", "Embarrassment"))
+})) 
+
+# Drop confidence interval information
+(gino_summary_short <- gino_summary %>%
+    select(condition, item, mean, sd))
+
+# Rename columns
+(gino_summary_short <- gino_summary_short %>%
+    rename(
+      Variable = item,
+      M = mean,
+      SD = sd
+    ) %>%
+    arrange(Variable))
+
+# Separate by condition
+(gino_table <- gino_summary_short %>%
+  filter(condition == "inauthenticity") %>%
+  ungroup() %>%
+  select(Variable, M, SD))
+
+failure <- gino_summary_short %>%
+  filter(condition == "failure") %>%
+  ungroup() %>%
+  select(M, SD)
+
+condition <- gino_summary_short %>%
+  filter(condition == "neutral") %>%
+  ungroup() %>%
+  select(M, SD)
+
+# Prepare table format
+(clean_table <- bind_cols(gino_table, failure, condition))
