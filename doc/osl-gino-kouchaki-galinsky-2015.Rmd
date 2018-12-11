@@ -37,6 +37,8 @@ We start by loading the necessary packages.
 ```{r message=FALSE}
 library(tidyverse) # utility
 library(psych) # cronbach's alpha
+library(knitr) # create tables
+library(kableExtra) # style tables
 ```
 
 Now we can import the data set. Note the relative path since the working directory has been set.
@@ -150,6 +152,69 @@ Although the activity does not require it, you will notice the upper and lower b
     upper = mean + (t_star * (sd/sqrt(n))), 
     lower = mean - (t_star * (sd/sqrt(n)))
   ))
+```
+
+### APA Style Table
+
+If `item` becames a factor, we can rearrange the order and apply labels that match the publication.
+
+```{r}
+(gino_summary <- within(gino_summary, {
+  item <- factor(item, 
+                 levels = c("self_alienation", "feelings_of_impurity", "feelings_of_discomfort",
+                            "negative_affect", "positive_affect", "embarrassment"),
+                 labels = c("Self-alienation", "Feelings of impurity", "Discomfort",
+                            "Negative affect", "Positive affect", "Embarrassment"))
+})) 
+```
+
+Isolate the mean and standard deviation, renaming the columns to match APA format.
+
+```{r}
+# Drop confidence interval information
+(gino_summary_short <- gino_summary %>%
+    select(condition, item, mean, sd))
+
+# Rename columns
+(gino_summary_short <- gino_summary_short %>%
+    rename(
+      Variable = item,
+      M = mean,
+      SD = sd
+    ) %>%
+    arrange(Variable))
+```
+
+The table is too long. Divide this data frame into three R objects, then merge the columns to one master data frame.
+
+```{r}
+# Separate by condition
+(gino_table <- gino_summary_short %>%
+  filter(condition == "inauthenticity") %>%
+  ungroup() %>%
+  select(Variable, M, SD))
+
+failure <- gino_summary_short %>%
+  filter(condition == "failure") %>%
+  ungroup() %>%
+  select(M, SD)
+
+condition <- gino_summary_short %>%
+  filter(condition == "neutral") %>%
+  ungroup() %>%
+  select(M, SD)
+
+# Prepare table format
+(clean_table <- bind_cols(gino_table, failure, condition))
+```
+
+The following code is a `kable` in LaTeX form. It saves the table in APA style as a `.png` and displays the output.
+
+```{r}
+kable(clean_table, "latex", booktabs = TRUE, digits = 2, align = "lcccccc",
+      col.names = c("Variable", "M", "SD", "M", "SD", "M", "SD")) %>%
+  add_header_above(header = c(" ", "Inauthenticity" = 2, "Failure" = 2, "Control" = 2)) %>%
+  kable_as_image(filename = "../data/results/apa_table")
 ```
 
 ## Communicate

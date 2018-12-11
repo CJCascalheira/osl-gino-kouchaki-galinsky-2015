@@ -3,6 +3,8 @@
 # Load dependencies
 library(tidyverse)
 library(psych)
+library(knitr)
+library(kableExtra)
 
 # Set working directory
 setwd("~/GitHub/osl-gino-kouchaki-galinsky-2015/src")
@@ -127,3 +129,9 @@ condition <- gino_summary_short %>%
 
 # Prepare table format
 (clean_table <- bind_cols(gino_table, failure, condition))
+
+# Construct table
+kable(clean_table, "latex", booktabs = TRUE, digits = 2, align = "lcccccc",
+      col.names = c("Variable", "M", "SD", "M", "SD", "M", "SD")) %>%
+  add_header_above(header = c(" ", "Inauthenticity" = 2, "Failure" = 2, "Control" = 2)) %>%
+  kable_as_image(filename = "../data/results/apa_table")
