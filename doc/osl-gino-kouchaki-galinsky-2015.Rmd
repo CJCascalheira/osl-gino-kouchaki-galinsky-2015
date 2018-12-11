@@ -217,6 +217,62 @@ kable(clean_table, "latex", booktabs = TRUE, digits = 2, align = "lcccccc",
   kable_as_image(filename = "../data/results/apa_table")
 ```
 
+### One-way ANOVA
+
+Now we can conduct a one-way between-groups ANOVA for each construct. The assumptions for this parametic test can be thought of as either met before the study was conducted or tested after data collection.
+
+**Design Assumptions**
+1. **Continuous dependent variable** at the interval or ratio level. 
+
+2. **Categorical independent variable** as a factor with three or more levels.
+
+3. **Independence of observations** such that participants are randomly assigned to levels of the factor (i.e., groups) with no overlap.
+
+**Tested Assumptions**
+4. **No significant outliers**, which can skew the distribution and affect normality; assessed via boxplots.
+
+5. **Normal distribution** of dependent measures for each group; assessed with Shapiro-Wilk and Q-Q plots.
+
+6. **Homogeneity of variances** between all groups for each dependent measure; assessed with Levene's test.
+
+#### Self-alienation {.tabset .tabset-pills}
+
+##### Outliers?
+##### Normality?
+##### Homoscedasticity?
+
+#### Feelings of Impurity {.tabset .tabset-pills}
+
+##### Outliers?
+##### Normality?
+##### Homoscedasticity?
+
+#### Discomfort {.tabset .tabset-pills}
+
+##### Outliers?
+##### Normality?
+##### Homoscedasticity?
+
+#### Negative Affect {.tabset .tabset-pills}
+
+##### Outliers?
+##### Normality?
+##### Homoscedasticity?
+
+#### Positive Affect {.tabset .tabset-pills}
+
+##### Outliers?
+##### Normality?
+##### Homoscedasticity?
+
+#### Embarrassment {.tabset .tabset-pills}
+
+##### Outliers?
+##### Normality?
+##### Homoscedasticity?
+
+### Chi-square Test
+
 ## Communicate
 ___
 After writing their essays, participants answered a questionnaire composed of items on a 7-point scale. The items assessed feelings of impurity ($\alpha = .94$), discomfort ($\alpha = .94$), negative ($\alpha = .93$) and positive ($\alpha = .95$) affect, embarrassment ($\alpha = .90$), and self-alienation ($\alpha = .90$).
