@@ -7,6 +7,7 @@ library(knitr)
 library(kableExtra)
 library(broom)
 library(car)
+library(gmodels)
 
 # Set working directory
 setwd("~/GitHub/osl-gino-kouchaki-galinsky-2015/src")
@@ -306,3 +307,57 @@ plot(embarrassment_aov, 1)
 ###############################################################################
 
 ### Chi-square Test of Independence ###
+
+# Select helping variable
+(gino_help <- gino_clean %>%
+  select(condition, decided_to_help))
+
+# Conduct chi-square test on contingency table
+chisq.test(table(gino_help))
+
+# Conduct chi-square test on two vectors
+chisq.test(gino_means$condition, gino_means$decided_to_help)
+
+# Function to calculate Cramer's V
+cv.test = function(x,y) {
+  CV = sqrt(chisq.test(x, y, correct=FALSE)$statistic /
+              (length(x) * (min(length(unique(x)),length(unique(y))) - 1)))
+  print.noquote("Cramér V / Phi:")
+  return(as.numeric(CV))
+}
+
+# Cramer's V for all conditions
+cv.test(gino_means$condition, gino_means$decided_to_help)
+
+# Percentage of participants helping by condition 
+gino_help %>%
+  group_by(condition) %>%
+  summarize(
+    percentage = mean(decided_to_help)
+  )
+
+# Chi-square of inauthenticity vs. failure
+gino_help_fail <- gino_help %>%
+  filter(condition != "neutral")
+
+# Drop unused factor level
+gino_help_fail$condition <- droplevels(gino_help_fail$condition)
+
+chisq.test(table(gino_help_fail))
+
+# Crosstabs method
+CrossTable(gino_help_fail$condition, gino_help_fail$decided_to_help, 
+           format = "SPSS", chisq = TRUE)
+
+# Chi-square of inauthenticity vs. neutral
+gino_help_neutral <- gino_help %>%
+  filter(condition != "failure")
+
+# Drop unused factor level
+gino_help_neutral$condition <- droplevels(gino_help_neutral$condition)
+
+chisq.test(table(gino_help_neutral))
+
+# Crosstabs method
+CrossTable(gino_help_neutral$condition, gino_help_neutral$decided_to_help, 
+           format = "SPSS", chisq = TRUE)

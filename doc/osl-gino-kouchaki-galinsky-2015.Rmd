@@ -41,6 +41,7 @@ library(knitr) # create tables
 library(kableExtra) # style tables
 library(broom) # calculate effect size
 library(car) # Levene's test
+library(gmodels) # crosstabs method for chi-square
 ```
 
 Now we can import the data set. Note the relative path since the working directory has been set.
@@ -511,6 +512,87 @@ Since *p* = .016, we reject the null hypothesis; the variances are heterogeneous
 
 ### Chi-square Test
 
+A chi-square test of independence is used to examine whether two categorical variables are associated. It can be conducted in R using `chisq.test()` on a contingency table, or calling that function on two vectors. 
+
+$$H_0: \text{the two variables are independent} \\ H_1: \text{the two variables are associated}$$
+
+Cramer's V is a [measure of association](https://www.r-bloggers.com/example-8-39-calculating-cramers-v/) for categorical variables and be thought of as the effect size of the chi-square test. It is given by the equation:
+
+$$\phi_c = \sqrt{\frac{\chi^2}{N(k - 1)}}$$
+
+This function can be used to calculate Cramer's V:
+
+```{r}
+cv.test = function(x,y) {
+  CV = sqrt(chisq.test(x, y, correct=FALSE)$statistic /
+              (length(x) * (min(length(unique(x)),length(unique(y))) - 1)))
+  print.noquote("Cramér V / Phi:")
+  return(as.numeric(CV))
+}
+```
+
+Is the percentage of participants helping the same across groups?
+
+```{r}
+# Select helping variable
+gino_help <- gino_clean %>%
+  select(condition, decided_to_help)
+
+# Conduct chi-square test on contingency table
+chisq.test(table(gino_help))
+
+# Cramer's V for all conditions
+cv.test(gino_means$condition, gino_means$decided_to_help)
+```
+
+The proportion of participants who decided to help varied across conditions, $\chi^2(2, N = 288) = 10.35$, *p* = .006, Cramer's *V* = .19. 
+
+Now we calculate the proportion of those who helped by condition.
+
+```{r}
+gino_help %>%
+  group_by(condition) %>%
+  summarize(
+    percentage = mean(decided_to_help)
+  )
+```
+
+Notice that when we compute chi-square tests on 2 x 2 frequency tables, it may be avisable to use Yate's correction.
+
+```{r}
+# Chi-square of inauthenticity vs. failure
+gino_help_fail <- gino_help %>%
+  filter(condition != "neutral")
+
+# Drop unused factor level
+gino_help_fail$condition <- droplevels(gino_help_fail$condition)
+
+chisq.test(table(gino_help_fail))
+
+# Chi-square of inauthenticity vs. neutral
+gino_help_neutral <- gino_help %>%
+  filter(condition != "failure")
+
+# Drop unused factor level
+gino_help_neutral$condition <- droplevels(gino_help_neutral$condition)
+
+chisq.test(table(gino_help_neutral))
+```
+
+Here, these values do not match those reported by Gino, Kouchaki, and Galinsky (2015). Let us verify our calculations with an alternative method using a function similar to [CROSSTABS in SPSS](https://www.statmethods.net/stats/frequencies.html).
+
+```{r}
+# Crosstabs method: inauthenticity vs. failure
+CrossTable(gino_help_fail$condition, gino_help_fail$decided_to_help, 
+           format = "SPSS", chisq = TRUE)
+
+# Crosstabs method: inauthenticity vs. neutral
+CrossTable(gino_help_neutral$condition, gino_help_neutral$decided_to_help, 
+           format = "SPSS", chisq = TRUE)
+```
+
+Participants who wrote an essay about an inauthentic memory were likely to help (33.7%) than those who wrote about failure (17.5%, $\chi^2(1, N = 189) = 5.69$, *p* = .017) or a recent situation (16.2%, $\chi^2(1, N = 191) = 6.99$, *p* = .008).
+
 ## Communicate
 ___
 After writing their essays, participants answered a questionnaire composed of items on a 7-point scale. The items assessed feelings of impurity ($\alpha = .94$), discomfort ($\alpha = .94$), negative ($\alpha = .93$) and positive ($\alpha = .95$) affect, embarrassment ($\alpha = .90$), and self-alienation ($\alpha = .90$).
@@ -526,6 +608,8 @@ After writing their essays, participants answered a questionnaire composed of it
 **Positive affect**. Positive affect varied across conditions as well, *F*(2, 285) = 116.76, *p* < .001, $\eta_p^2 = .45$. Pairwise comparisons (with Bonferroni adjustment) revealed that participants who wrote about an inexperience in which they felt inauthentic (*M* = 1.99, *SD* = 1.11) were less likely to report positive affect than those in the control condition (*M* = 4.46, *SD* = 1.77, *p* < .001). Compared to participants who wrote about failure (*M* = 1.84, *SD* = 1.01), those assigned to the control group reported greater positive affect (*p* < .001). Positive affect was the same for participants in both the inauthenticity and failure conditions (*p* = 1.00).
 
 **Embarrassment**. Feelings of embarrassment also varied across conditions, *F*(2, 285) = 80.77, *p* < .001, $\eta_p^2 = .36$. Pairwise comparisons (with Bonferroni adjustment) indicated no difference in reported embarrassment between those who wrote an essay about an inauthentic experience (*M* = 4.40, *SD* = 1.71) and those who wrote about failure (*M* = 4.69, *SD* = 1.82, *p* = .71). Participants were less likely to feel embarrassed when writing about a recent situation (*M* = 1.96, *SD* = 1.38) than in a memory involving inauthenticity (*p* < .001) or failure (*p* < .001).
+
+**Decided to help**. The proportion of participants who decided to help varied across conditions, $\chi^2(2, N = 288) = 10.35$, *p* = .006, Cramer's *V* = .19. Participants who wrote an essay about an inauthentic memory were likely to help (33.7%) than those who wrote about failure (17.5%, $\chi^2(1, N = 189) = 5.69$, *p* = .017) or a recent situation (16.2%, $\chi^2(1, N = 191) = 6.99$, *p* = .008).
 
 # Acknowledgements
 ___
