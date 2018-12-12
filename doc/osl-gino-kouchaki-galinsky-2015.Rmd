@@ -39,6 +39,7 @@ library(tidyverse) # utility
 library(psych) # cronbach's alpha
 library(knitr) # create tables
 library(kableExtra) # style tables
+library(broom) # calculate effect size
 ```
 
 Now we can import the data set. Note the relative path since the working directory has been set.
@@ -231,11 +232,36 @@ Now we can conduct a one-way between-groups ANOVA for each construct. The assump
 **Tested Assumptions**
 4. **No significant outliers**, which can skew the distribution and affect normality; assessed via boxplots.
 
-5. **Normal distribution** of dependent measures for each group; assessed with Shapiro-Wilk and Q-Q plots.
+5. **Normal distribution** of dependent measures for each group; approximate normality is fine since univariate ANOVA is a robust test; assessed with Shapiro-Wilk and Q-Q plots.
 
 6. **Homogeneity of variances** between all groups for each dependent measure; assessed with Levene's test.
 
+After each omnibus test, we will conduct pairwise comparisons with a Bonferroni correction to determine which pairs of groups are significantly different. The [Bonferroni correction](https://www.r-bloggers.com/r-tutorial-series-anova-pairwise-comparison-methods/) divides the Type I error rate by the number of levels of the factor (in this case, 3), making the Bonferroni correction a more conservative estimate of significance.
+
+Reporting the direction of comparisons relies on the descriptive statistics calculated above.
+
+The effect size of a one-way ANOVA is partial eta-squared, which we can calculate manually:
+
+$$\eta_p^2 = \frac{SS_\text{condition}}{SS_\text{condition} + SS_\text{residuals}}$$
+
+After creating an `aov` object, we will extract coefficient-level information with `broom::tidy` to code the sum of squares. This prevents transcription error and supports reproducibility.
+
 #### Self-alienation {.tabset .tabset-pills}
+
+```{r}
+# Self-alienation
+alienation_aov <- aov(self_alienation ~ condition, data = gino_means)
+
+# Partial eta-squared
+(alienation_tidied <- tidy(alienation_aov))
+alienation_tidied$sumsq[1] / (alienation_tidied$sumsq[1] + alienation_tidied$sumsq[2])
+
+# Pairwise comparisons
+pairwise.t.test(gino_means$self_alienation, gino_means$condition,
+                p.adjust.method = "bonferroni")
+```
+
+A one-way ANOVA using the self-alienation manipulation check as the dependent measure evinced a main effect of condition, *F*(2, 285) = 43.23, *p* < .001, $\eta_p^2 = .23$. Pairwise t-tests corrected by Bonferroni adjustment revealed that participants in the inauthentic condition (*M* = 3.83, *SD* = 1.51) felt a greater distance from the self than participants in either the failure (*M* = 3.21, *SD* = 1.62, *p* = .012) or the control condition (*M* = 1.92, *SD* = 1.19, *p* < .001). Participants reported greater self-alienation when they recalled a failure than when they recalled a recent situation (*p* < .001).
 
 ##### Outliers?
 ##### Normality?
@@ -243,11 +269,41 @@ Now we can conduct a one-way between-groups ANOVA for each construct. The assump
 
 #### Feelings of Impurity {.tabset .tabset-pills}
 
+```{r}
+# Feelings of Impurity
+impurity_aov <- aov(feelings_of_impurity ~ condition, data = gino_means)
+
+# Partial eta-squared
+(impurity_tidied <- tidy(impurity_aov))
+impurity_tidied$sumsq[1] / (impurity_tidied$sumsq[1] + impurity_tidied$sumsq[2])
+
+# Pairwise comparisons
+pairwise.t.test(gino_means$feelings_of_impurity, gino_means$condition,
+                p.adjust.method = "bonferroni")
+```
+
+A one-way ANOVA using the composite score of impurity as the dependent measure also revealed a main effect of condition, *F*(2, 285) = 72.29, *p* < .001, $\eta_p^2 = .34$. Pairwise comparisons (with Bonferroni adjustment) revealed significant difference across conditions. Participants who wrote essays about an inauthentic experience (*M* = 3.66, *SD* = 1.82) reported feeling more impure than those who wrote about a failure (*M* = 2.09, *SD* = 1.56, *p* < .001) or recent memory (*M* = 1.21, *SD* = 0.61, *p* < .001). Reported feelings of impurity were higher among participants in the failure than in the control condition (*p* < .001).
+
 ##### Outliers?
 ##### Normality?
 ##### Homoscedasticity?
 
 #### Discomfort {.tabset .tabset-pills}
+
+```{r}
+# Discomfort
+discomfort_aov <- aov(feelings_of_discomfort ~ condition, data = gino_means)
+
+# Partial eta-squared
+(discomfort_tidied <- tidy(discomfort_aov))
+discomfort_tidied$sumsq[1] / (discomfort_tidied$sumsq[1] + discomfort_tidied$sumsq[2])
+
+# Pairwise comparisons
+pairwise.t.test(gino_means$feelings_of_discomfort, gino_means$condition,
+                p.adjust.method = "bonferroni")
+```
+
+Feelings of discomfort varied across conditions, *F*(2, 285) = 82.67, *p* < .001, $\eta_p^2 = .37$. Pairwise comparisons (with Bonferroni adjustment) revealed that participants who wrote about inauthenticity (*M* = 5.11, *SD* = 1.53) felt the same amount of psychological discomfort as those who wrote about failure (*M* = 4.90, *SD* = 1.64, *p* = 1.00), but reported higher levels than those who wrote about a recent situation (*M* = 2.41, *SD* = 1.71, *p* < .001). Participants reported more discomfort when recalling a memory involving failure than a neutral memory (*p* < .001).  
 
 ##### Outliers?
 ##### Normality?
@@ -255,17 +311,62 @@ Now we can conduct a one-way between-groups ANOVA for each construct. The assump
 
 #### Negative Affect {.tabset .tabset-pills}
 
+```{r}
+# Negative Affect
+negative_aov <- aov(negative_affect ~ condition, data = gino_means)
+
+# Partial eta-squared
+(negative_tidied <- tidy(negative_aov))
+negative_tidied$sumsq[1] / (negative_tidied$sumsq[1] + negative_tidied$sumsq[2])
+
+# Pairwise comparisons
+pairwise.t.test(gino_means$negative_affect, gino_means$condition,
+                p.adjust.method = "bonferroni")
+```
+
+A main effect of condition was found for reported negative affect, *F*(2, 285) = 98.28, *p* < .001, $\eta_p^2 = .41$. Pairwise t-tests with Bonferroni corrections revealed no difference in reported negative affect among participants in the inauthenticity (*M* = 4.63, *SD* = 1.68) and failure (*M* = 4.61, *SD* = 1.73, *p* = 1.00) conditions. Participants who wrote about a recent memory (*M* = 1.88, *SD* = 1.30) were less likely to report negative affect than those who either wrote about inauthenticity (*p* < .001) or failure (*p* < .001). 
+
 ##### Outliers?
 ##### Normality?
 ##### Homoscedasticity?
 
 #### Positive Affect {.tabset .tabset-pills}
 
+```{r}
+# Positive Affect
+positive_aov <- aov(positive_affect ~ condition, data = gino_means)
+
+# Partial eta-squared
+(positive_tidied <- tidy(positive_aov))
+positive_tidied$sumsq[1] / (positive_tidied$sumsq[1] + positive_tidied$sumsq[2])
+
+# Pairwise comparisons
+pairwise.t.test(gino_means$positive_affect, gino_means$condition,
+                p.adjust.method = "bonferroni")
+```
+
+Positive affect varied across conditions as well, *F*(2, 285) = 116.76, *p* < .001, $\eta_p^2 = .45$. Pairwise comparisons (with Bonferroni adjustment) revealed that participants who wrote about an inexperience in which they felt inauthentic (*M* = 1.99, *SD* = 1.11) were less likely to report positive affect than those in the control condition (*M* = 4.46, *SD* = 1.77, *p* < .001). Compared to participants who wrote about failure (*M* = 1.84, *SD* = 1.01), those assigned to the control group reported greater positive affect (*p* < .001). Positive affect was the same for participants in both the inauthenticity and failure conditions (*p* = 1.00).
+
 ##### Outliers?
 ##### Normality?
 ##### Homoscedasticity?
 
 #### Embarrassment {.tabset .tabset-pills}
+
+```{r}
+# Embarrassment
+embarrassment_aov <- aov(embarrassment ~ condition, data = gino_means)
+
+# Partial eta-squared
+(embarrassment_tidied <- tidy(embarrassment_aov))
+embarrassment_tidied$sumsq[1] / (embarrassment_tidied$sumsq[1] + embarrassment_tidied$sumsq[2])
+
+# Pairwise comparisons
+pairwise.t.test(gino_means$embarrassment, gino_means$condition, 
+                p.adjust.method = "bonferroni")
+```
+
+Feelings of embarrassment also varied across conditions, *F*(2, 285) = 80.77, *p* < .001, $\eta_p^2 = .36$. Pairwise comparisons (with Bonferroni adjustment) indicated no difference in reported embarrassment between those who wrote an essay about an inauthentic experience (*M* = 4.40, *SD* = 1.71) and those who wrote about failure (*M* = 4.69, *SD* = 1.82, *p* = .71). Participants were less likely to feel embarrassed when writing about a recent situation (*M* = 1.96, *SD* = 1.38) than in a memory involving inauthenticity (*p* < .001) or failure (*p* < .001). 
 
 ##### Outliers?
 ##### Normality?
@@ -276,6 +377,18 @@ Now we can conduct a one-way between-groups ANOVA for each construct. The assump
 ## Communicate
 ___
 After writing their essays, participants answered a questionnaire composed of items on a 7-point scale. The items assessed feelings of impurity ($\alpha = .94$), discomfort ($\alpha = .94$), negative ($\alpha = .93$) and positive ($\alpha = .95$) affect, embarrassment ($\alpha = .90$), and self-alienation ($\alpha = .90$).
+
+**Self-alienation**. A one-way ANOVA using the self-alienation manipulation check as the dependent measure evinced a main effect of condition, *F*(2, 285) = 43.23, *p* < .001, $\eta_p^2 = .23$. Pairwise t-tests corrected by Bonferroni adjustment revealed that participants in the inauthentic condition (*M* = 3.83, *SD* = 1.51) felt a greater distance from the self than participants in either the failure (*M* = 3.21, *SD* = 1.62, *p* = .012) or the control condition (*M* = 1.92, *SD* = 1.19, *p* < .001). Participants reported greater self-alienation when they recalled a failure than when they recalled a recent situation (*p* < .001).
+
+**Feelings of impurity**. A one-way ANOVA using the composite score of impurity as the dependent measure also revealed a main effect of condition, *F*(2, 285) = 72.29, *p* < .001, $\eta_p^2 = .34$. Pairwise comparisons (with Bonferroni adjustment) revealed significant difference across conditions. Participants who wrote essays about an inauthentic experience (*M* = 3.66, *SD* = 1.82) reported feeling more impure than those who wrote about a failure (*M* = 2.09, *SD* = 1.56, *p* < .001) or recent memory (*M* = 1.21, *SD* = 0.61, *p* < .001). Reported feelings of impurity were higher among participants in the failure than in the control condition (*p* < .001).
+
+**Discomfort**. Feelings of discomfort varied across conditions, *F*(2, 285) = 82.67, *p* < .001, $\eta_p^2 = .37$. Pairwise comparisons (with Bonferroni adjustment) revealed that participants who wrote about inauthenticity (*M* = 5.11, *SD* = 1.53) felt the same amount of psychological discomfort as those who wrote about failure (*M* = 4.90, *SD* = 1.64, *p* = 1.00), but reported higher levels than those who wrote about a recent situation (*M* = 2.41, *SD* = 1.71, *p* < .001). Participants reported more discomfort when recalling a memory involving failure than a neutral memory (*p* < .001).
+
+**Negative affect**. A main effect of condition was found for reported negative affect, *F*(2, 285) = 98.28, *p* < .001, $\eta_p^2 = .41$. Pairwise t-tests with Bonferroni corrections revealed no difference in reported negative affect among participants in the inauthenticity (*M* = 4.63, *SD* = 1.68) and failure (*M* = 4.61, *SD* = 1.73, *p* = 1.00) conditions. Participants who wrote about a recent memory (*M* = 1.88, *SD* = 1.30) were less likely to report negative affect than those who either wrote about inauthenticity (*p* < .001) or failure (*p* < .001).
+
+**Positive affect**. Positive affect varied across conditions as well, *F*(2, 285) = 116.76, *p* < .001, $\eta_p^2 = .45$. Pairwise comparisons (with Bonferroni adjustment) revealed that participants who wrote about an inexperience in which they felt inauthentic (*M* = 1.99, *SD* = 1.11) were less likely to report positive affect than those in the control condition (*M* = 4.46, *SD* = 1.77, *p* < .001). Compared to participants who wrote about failure (*M* = 1.84, *SD* = 1.01), those assigned to the control group reported greater positive affect (*p* < .001). Positive affect was the same for participants in both the inauthenticity and failure conditions (*p* = 1.00).
+
+**Embarrassment**. Feelings of embarrassment also varied across conditions, *F*(2, 285) = 80.77, *p* < .001, $\eta_p^2 = .36$. Pairwise comparisons (with Bonferroni adjustment) indicated no difference in reported embarrassment between those who wrote an essay about an inauthentic experience (*M* = 4.40, *SD* = 1.71) and those who wrote about failure (*M* = 4.69, *SD* = 1.82, *p* = .71). Participants were less likely to feel embarrassed when writing about a recent situation (*M* = 1.96, *SD* = 1.38) than in a memory involving inauthenticity (*p* < .001) or failure (*p* < .001).
 
 # Acknowledgements
 ___

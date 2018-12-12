@@ -5,6 +5,7 @@ library(tidyverse)
 library(psych)
 library(knitr)
 library(kableExtra)
+library(broom)
 
 # Set working directory
 setwd("~/GitHub/osl-gino-kouchaki-galinsky-2015/src")
@@ -130,15 +131,30 @@ condition <- gino_summary_short %>%
 # Prepare table format
 (clean_table <- bind_cols(gino_table, failure, condition))
 
-# Construct table
+# Construct table, save as .png
 kable(clean_table, "latex", booktabs = TRUE, digits = 2, align = "lcccccc",
       col.names = c("Variable", "M", "SD", "M", "SD", "M", "SD")) %>%
   add_header_above(header = c(" ", "Inauthenticity" = 2, "Failure" = 2, "Control" = 2)) %>%
   kable_as_image(filename = "../data/results/apa_table")
 
+# Construct table, save as .jpeg (for white background)
+kable(clean_table, "latex", booktabs = TRUE, digits = 2, align = "lcccccc",
+      col.names = c("Variable", "M", "SD", "M", "SD", "M", "SD")) %>%
+  add_header_above(header = c(" ", "Inauthenticity" = 2, "Failure" = 2, "Control" = 2)) %>%
+  kable_as_image(filename = "../data/results/apa_table", file_format = "jpeg")
+
 ### One-way ANOVA ###
 
 # Self-alienation
+alienation_aov <- aov(self_alienation ~ condition, data = gino_means)
+
+# Partial eta-squared
+(alienation_tidied <- tidy(alienation_aov))
+alienation_tidied$sumsq[1] / (alienation_tidied$sumsq[1] + alienation_tidied$sumsq[2])
+
+# Pairwise comparisons
+pairwise.t.test(gino_means$self_alienation, gino_means$condition,
+                p.adjust.method = "bonferroni")
 
 ## Outliers?
 ## Normality?
@@ -147,7 +163,15 @@ kable(clean_table, "latex", booktabs = TRUE, digits = 2, align = "lcccccc",
 ###############################################################################
 
 # Feelings of Impurity
-summary(aov(feelings_of_impurity ~ condition, data = gino_means))
+impurity_aov <- aov(feelings_of_impurity ~ condition, data = gino_means)
+
+# Partial eta-squared
+(impurity_tidied <- tidy(impurity_aov))
+impurity_tidied$sumsq[1] / (impurity_tidied$sumsq[1] + impurity_tidied$sumsq[2])
+
+# Pairwise comparisons
+pairwise.t.test(gino_means$feelings_of_impurity, gino_means$condition,
+                p.adjust.method = "bonferroni")
 
 ## Outliers?
 ## Normality?
@@ -156,6 +180,15 @@ summary(aov(feelings_of_impurity ~ condition, data = gino_means))
 ###############################################################################
 
 # Discomfort
+discomfort_aov <- aov(feelings_of_discomfort ~ condition, data = gino_means)
+
+# Partial eta-squared
+(discomfort_tidied <- tidy(discomfort_aov))
+discomfort_tidied$sumsq[1] / (discomfort_tidied$sumsq[1] + discomfort_tidied$sumsq[2])
+
+# Pairwise comparisons
+pairwise.t.test(gino_means$feelings_of_discomfort, gino_means$condition,
+                p.adjust.method = "bonferroni")
 
 ## Outliers?
 ## Normality?
@@ -164,6 +197,15 @@ summary(aov(feelings_of_impurity ~ condition, data = gino_means))
 ###############################################################################
 
 # Negative Affect
+negative_aov <- aov(negative_affect ~ condition, data = gino_means)
+
+# Partial eta-squared
+(negative_tidied <- tidy(negative_aov))
+negative_tidied$sumsq[1] / (negative_tidied$sumsq[1] + negative_tidied$sumsq[2])
+
+# Pairwise comparisons
+pairwise.t.test(gino_means$negative_affect, gino_means$condition,
+                p.adjust.method = "bonferroni")
 
 ## Outliers?
 ## Normality?
@@ -172,6 +214,15 @@ summary(aov(feelings_of_impurity ~ condition, data = gino_means))
 ###############################################################################
 
 # Positive Affect
+positive_aov <- aov(positive_affect ~ condition, data = gino_means)
+
+# Partial eta-squared
+(positive_tidied <- tidy(positive_aov))
+positive_tidied$sumsq[1] / (positive_tidied$sumsq[1] + positive_tidied$sumsq[2])
+
+# Pairwise comparisons
+pairwise.t.test(gino_means$positive_affect, gino_means$condition,
+                p.adjust.method = "bonferroni")
 
 ## Outliers?
 ## Normality?
@@ -180,6 +231,15 @@ summary(aov(feelings_of_impurity ~ condition, data = gino_means))
 ###############################################################################
 
 # Embarrassment
+embarrassment_aov <- aov(embarrassment ~ condition, data = gino_means)
+
+# Partial eta-squared
+(embarrassment_tidied <- tidy(embarrassment_aov))
+embarrassment_tidied$sumsq[1] / (embarrassment_tidied$sumsq[1] + embarrassment_tidied$sumsq[2])
+
+# Pairwise comparisons
+pairwise.t.test(gino_means$embarrassment, gino_means$condition, 
+                p.adjust.method = "bonferroni")
 
 ## Outliers?
 ## Normality?
