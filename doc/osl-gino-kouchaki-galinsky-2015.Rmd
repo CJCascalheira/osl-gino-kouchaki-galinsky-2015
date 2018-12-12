@@ -35,17 +35,24 @@ ___
 We start by loading the necessary packages.
 
 ```{r message=FALSE}
-library(tidyverse) # utility
-library(psych) # cronbach's alpha
+library(tidyverse) # utility & visualization
+library(psych) # Cronbach's alpha
 library(knitr) # create tables
 library(kableExtra) # style tables
 library(broom) # calculate effect size
+library(car) # Levene's test
 ```
 
 Now we can import the data set. Note the relative path since the working directory has been set.
 
 ```{r message=FALSE}
 gino <- read_csv("../data/Gino Kouchaki Galinsky 2015 Experiment 3.csv")
+```
+
+We can also set the default theme for the exploratory plots we will create as we test the assumptions of the univariate ANOVAs.
+
+```{r}
+theme_set(theme_minimal())
 ```
 
 ## Clean
@@ -232,9 +239,14 @@ Now we can conduct a one-way between-groups ANOVA for each construct. The assump
 **Tested Assumptions**
 4. **No significant outliers**, which can skew the distribution and affect normality; assessed via boxplots.
 
-5. **Normal distribution** of dependent measures for each group; approximate normality is fine since univariate ANOVA is a robust test; assessed with Shapiro-Wilk and Q-Q plots.
+5. **Normal distribution** of dependent measures for each group; assessed with Shapiro-Wilk and Q-Q plots.
+    - Univariate ANOVAs can tolerate non-normal data.
+    - Shapiro-Wilk test is conducted on the residuals of the ANOVA models.
+    - The data points in the Q-Q plot should be aligned with the dotted diagonal line if the distribution of the dependent measure is to be considered normal.
 
-6. **Homogeneity of variances** between all groups for each dependent measure; assessed with Levene's test.
+6. **Homogeneity of variances** between all groups for each dependent measure; assessed with [Levene's test](https://files.eric.ed.gov/fulltext/EJ809430.pdf) and plot of residuals versus fitted values.
+    - Violation of this assumption is most problematic when sample sizes are not *roughly* [equal](https://stats.stackexchange.com/questions/303905/what-affects-levenes-test-sig-value).
+    - Homogeneity of variances can be assumed if the red line in [residuals vs. fitted values plot](http://www.sthda.com/english/wiki/one-way-anova-test-in-r) is horizontal.
 
 After each omnibus test, we will conduct pairwise comparisons with a Bonferroni correction to determine which pairs of groups are significantly different. The [Bonferroni correction](https://www.r-bloggers.com/r-tutorial-series-anova-pairwise-comparison-methods/) divides the Type I error rate by the number of levels of the factor (in this case, 3), making the Bonferroni correction a more conservative estimate of significance.
 
@@ -264,8 +276,29 @@ pairwise.t.test(gino_means$self_alienation, gino_means$condition,
 A one-way ANOVA using the self-alienation manipulation check as the dependent measure evinced a main effect of condition, *F*(2, 285) = 43.23, *p* < .001, $\eta_p^2 = .23$. Pairwise t-tests corrected by Bonferroni adjustment revealed that participants in the inauthentic condition (*M* = 3.83, *SD* = 1.51) felt a greater distance from the self than participants in either the failure (*M* = 3.21, *SD* = 1.62, *p* = .012) or the control condition (*M* = 1.92, *SD* = 1.19, *p* < .001). Participants reported greater self-alienation when they recalled a failure than when they recalled a recent situation (*p* < .001).
 
 ##### Outliers?
+```{r}
+ggplot(gino_means, aes(x = condition, y = self_alienation)) +
+  geom_boxplot()
+```
+
+Outliers are present int he neutral condition.
+
 ##### Normality?
+```{r}
+alienation_residuals <- residuals(alienation_aov)
+shapiro.test(alienation_residuals)
+plot(alienation_aov, 2)
+```
+
+Since *p* < .001, we reject the null hypothesis: the data are not normally distributed.
+
 ##### Homoscedasticity?
+```{r}
+leveneTest(self_alienation ~ condition, data = gino_means)
+plot(alienation_aov, 1)
+```
+
+Since *p* < .001. we reject the null hypothesis: the variances are heterogeneous.
 
 #### Feelings of Impurity {.tabset .tabset-pills}
 
@@ -285,8 +318,29 @@ pairwise.t.test(gino_means$feelings_of_impurity, gino_means$condition,
 A one-way ANOVA using the composite score of impurity as the dependent measure also revealed a main effect of condition, *F*(2, 285) = 72.29, *p* < .001, $\eta_p^2 = .34$. Pairwise comparisons (with Bonferroni adjustment) revealed significant difference across conditions. Participants who wrote essays about an inauthentic experience (*M* = 3.66, *SD* = 1.82) reported feeling more impure than those who wrote about a failure (*M* = 2.09, *SD* = 1.56, *p* < .001) or recent memory (*M* = 1.21, *SD* = 0.61, *p* < .001). Reported feelings of impurity were higher among participants in the failure than in the control condition (*p* < .001).
 
 ##### Outliers?
+```{r}
+ggplot(gino_means, aes(x = condition, y = feelings_of_impurity)) +
+  geom_boxplot()
+```
+
+Outliers are present.
+
 ##### Normality?
+```{r}
+impurity_residuals <- residuals(impurity_aov)
+shapiro.test(impurity_residuals)
+plot(impurity_aov, 2)
+```
+
+The data are not normally distributed.
+
 ##### Homoscedasticity?
+```{r}
+leveneTest(feelings_of_impurity ~ condition, data = gino_means)
+plot(impurity_aov, 1)
+```
+
+Since *p* < .001, we reject the null hypothesis that the variances are homogeneous.
 
 #### Discomfort {.tabset .tabset-pills}
 
@@ -306,8 +360,29 @@ pairwise.t.test(gino_means$feelings_of_discomfort, gino_means$condition,
 Feelings of discomfort varied across conditions, *F*(2, 285) = 82.67, *p* < .001, $\eta_p^2 = .37$. Pairwise comparisons (with Bonferroni adjustment) revealed that participants who wrote about inauthenticity (*M* = 5.11, *SD* = 1.53) felt the same amount of psychological discomfort as those who wrote about failure (*M* = 4.90, *SD* = 1.64, *p* = 1.00), but reported higher levels than those who wrote about a recent situation (*M* = 2.41, *SD* = 1.71, *p* < .001). Participants reported more discomfort when recalling a memory involving failure than a neutral memory (*p* < .001).  
 
 ##### Outliers?
+```{r}
+ggplot(gino_means, aes(x = condition, y = feelings_of_discomfort)) +
+  geom_boxplot()
+```
+
+Outliers are present in the inauthenticity condition.
+
 ##### Normality?
+```{r}
+discomfort_residuals <- residuals(discomfort_aov)
+shapiro.test(discomfort_residuals)
+plot(discomfort_aov, 2)
+```
+
+The data are not normally distributed (*p* < .001).
+
 ##### Homoscedasticity?
+```{r}
+leveneTest(feelings_of_discomfort ~ condition, data = gino_means)
+plot(discomfort_aov, 1)
+```
+
+Since *p* = .312, we fail the reject the null hypothesis; the variances are homogeneous.
 
 #### Negative Affect {.tabset .tabset-pills}
 
@@ -327,8 +402,28 @@ pairwise.t.test(gino_means$negative_affect, gino_means$condition,
 A main effect of condition was found for reported negative affect, *F*(2, 285) = 98.28, *p* < .001, $\eta_p^2 = .41$. Pairwise t-tests with Bonferroni corrections revealed no difference in reported negative affect among participants in the inauthenticity (*M* = 4.63, *SD* = 1.68) and failure (*M* = 4.61, *SD* = 1.73, *p* = 1.00) conditions. Participants who wrote about a recent memory (*M* = 1.88, *SD* = 1.30) were less likely to report negative affect than those who either wrote about inauthenticity (*p* < .001) or failure (*p* < .001). 
 
 ##### Outliers?
+```{r}
+ggplot(gino_means, aes(x = condition, y = negative_affect)) +
+  geom_boxplot()
+```
+
+Three outliers in the control condition.
+
 ##### Normality?
+```{r}
+negative_residuals <- residuals(negative_aov)
+shapiro.test(negative_residuals)
+plot(negative_aov, 2)
+```
+
+The distribution of reported negative affect violates the assumption of normality.
+
 ##### Homoscedasticity?
+```{r}
+leveneTest(negative_affect ~ condition, data = gino_means)
+plot(negative_aov, 1)
+```
+
 
 #### Positive Affect {.tabset .tabset-pills}
 
@@ -348,8 +443,29 @@ pairwise.t.test(gino_means$positive_affect, gino_means$condition,
 Positive affect varied across conditions as well, *F*(2, 285) = 116.76, *p* < .001, $\eta_p^2 = .45$. Pairwise comparisons (with Bonferroni adjustment) revealed that participants who wrote about an inexperience in which they felt inauthentic (*M* = 1.99, *SD* = 1.11) were less likely to report positive affect than those in the control condition (*M* = 4.46, *SD* = 1.77, *p* < .001). Compared to participants who wrote about failure (*M* = 1.84, *SD* = 1.01), those assigned to the control group reported greater positive affect (*p* < .001). Positive affect was the same for participants in both the inauthenticity and failure conditions (*p* = 1.00).
 
 ##### Outliers?
+```{r}
+ggplot(gino_means, aes(x = condition, y = positive_affect)) +
+  geom_boxplot()
+```
+
+Outliers are present.
+
 ##### Normality?
+```{r}
+positive_residuals <- residuals(positive_aov)
+shapiro.test(positive_residuals)
+plot(positive_aov, 2)
+```
+
+The distribution of reported positive affect is non-normal. 
+
 ##### Homoscedasticity?
+```{r}
+leveneTest(positive_affect ~ condition, data = gino_means)
+plot(positive_aov, 1)
+```
+
+Since *p* < .001, we reject the null hypothesis; the data are heteroscedastic.
 
 #### Embarrassment {.tabset .tabset-pills}
 
@@ -369,8 +485,29 @@ pairwise.t.test(gino_means$embarrassment, gino_means$condition,
 Feelings of embarrassment also varied across conditions, *F*(2, 285) = 80.77, *p* < .001, $\eta_p^2 = .36$. Pairwise comparisons (with Bonferroni adjustment) indicated no difference in reported embarrassment between those who wrote an essay about an inauthentic experience (*M* = 4.40, *SD* = 1.71) and those who wrote about failure (*M* = 4.69, *SD* = 1.82, *p* = .71). Participants were less likely to feel embarrassed when writing about a recent situation (*M* = 1.96, *SD* = 1.38) than in a memory involving inauthenticity (*p* < .001) or failure (*p* < .001). 
 
 ##### Outliers?
+```{r}
+ggplot(gino_means, aes(x = condition, y = embarrassment)) +
+  geom_boxplot()
+```
+
+Outliers are present.
+
 ##### Normality?
+```{r}
+embarrassment_residuals <- residuals(embarrassment_aov)
+shapiro.test(embarrassment_residuals)
+plot(embarrassment_aov, 2)
+```
+
+Since *p* < .001, we reject the null hypothesis; the data violate the assumption of normality.
+
 ##### Homoscedasticity?
+```{r}
+leveneTest(embarrassment ~ condition, data = gino_means)
+plot(embarrassment_aov, 1)
+```
+
+Since *p* = .016, we reject the null hypothesis; the variances are heterogeneous.
 
 ### Chi-square Test
 

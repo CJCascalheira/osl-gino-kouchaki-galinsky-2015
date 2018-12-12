@@ -6,12 +6,16 @@ library(psych)
 library(knitr)
 library(kableExtra)
 library(broom)
+library(car)
 
 # Set working directory
 setwd("~/GitHub/osl-gino-kouchaki-galinsky-2015/src")
 
 # Import data
 gino <- read_csv("../data/Gino Kouchaki Galinsky 2015 Experiment 3.csv")
+
+# Set default ggplot theme
+theme_set(theme_minimal())
 
 ###### CLEAN #######
 
@@ -157,8 +161,17 @@ pairwise.t.test(gino_means$self_alienation, gino_means$condition,
                 p.adjust.method = "bonferroni")
 
 ## Outliers?
+ggplot(gino_means, aes(x = condition, y = self_alienation)) +
+  geom_boxplot()
+
 ## Normality?
+alienation_residuals <- residuals(alienation_aov)
+shapiro.test(alienation_residuals)
+plot(alienation_aov, 2)
+
 ## Homoscedasticity?
+leveneTest(self_alienation ~ condition, data = gino_means)
+plot(alienation_aov, 1)
 
 ###############################################################################
 
@@ -174,8 +187,17 @@ pairwise.t.test(gino_means$feelings_of_impurity, gino_means$condition,
                 p.adjust.method = "bonferroni")
 
 ## Outliers?
+ggplot(gino_means, aes(x = condition, y = feelings_of_impurity)) +
+  geom_boxplot()
+
 ## Normality?
+impurity_residuals <- residuals(impurity_aov)
+shapiro.test(impurity_residuals)
+plot(impurity_aov, 2)
+
 ## Homoscedasticity?
+leveneTest(feelings_of_impurity ~ condition, data = gino_means)
+plot(impurity_aov, 1)
 
 ###############################################################################
 
@@ -191,8 +213,17 @@ pairwise.t.test(gino_means$feelings_of_discomfort, gino_means$condition,
                 p.adjust.method = "bonferroni")
 
 ## Outliers?
+ggplot(gino_means, aes(x = condition, y = feelings_of_discomfort)) +
+  geom_boxplot()
+
 ## Normality?
+discomfort_residuals <- residuals(discomfort_aov)
+shapiro.test(discomfort_residuals)
+plot(discomfort_aov, 2)
+
 ## Homoscedasticity?
+leveneTest(feelings_of_discomfort ~ condition, data = gino_means)
+plot(discomfort_aov, 1)
 
 ###############################################################################
 
@@ -208,8 +239,17 @@ pairwise.t.test(gino_means$negative_affect, gino_means$condition,
                 p.adjust.method = "bonferroni")
 
 ## Outliers?
+ggplot(gino_means, aes(x = condition, y = negative_affect)) +
+  geom_boxplot()
+
 ## Normality?
+negative_residuals <- residuals(negative_aov)
+shapiro.test(negative_residuals)
+plot(negative_aov, 2)
+
 ## Homoscedasticity?
+leveneTest(negative_affect ~ condition, data = gino_means)
+plot(negative_aov, 1)
 
 ###############################################################################
 
@@ -225,8 +265,17 @@ pairwise.t.test(gino_means$positive_affect, gino_means$condition,
                 p.adjust.method = "bonferroni")
 
 ## Outliers?
+ggplot(gino_means, aes(x = condition, y = positive_affect)) +
+  geom_boxplot()
+
 ## Normality?
+positive_residuals <- residuals(positive_aov)
+shapiro.test(positive_residuals)
+plot(positive_aov, 2)
+
 ## Homoscedasticity?
+leveneTest(positive_affect ~ condition, data = gino_means)
+plot(positive_aov, 1)
 
 ###############################################################################
 
@@ -242,8 +291,17 @@ pairwise.t.test(gino_means$embarrassment, gino_means$condition,
                 p.adjust.method = "bonferroni")
 
 ## Outliers?
+ggplot(gino_means, aes(x = condition, y = embarrassment)) +
+  geom_boxplot()
+
 ## Normality?
+embarrassment_residuals <- residuals(embarrassment_aov)
+shapiro.test(embarrassment_residuals)
+plot(embarrassment_aov, 2)
+
 ## Homoscedasticity?
+leveneTest(embarrassment ~ condition, data = gino_means)
+plot(embarrassment_aov, 1)
 
 ###############################################################################
 
